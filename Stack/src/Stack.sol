@@ -21,5 +21,30 @@ contract Stack {
         stack = _stack;
     }
 
-    // your code here
+	function size() public view returns(uint256) {
+		return stack.length;
+	}
+
+    function push(uint256 number) public {
+		stack.push(number);
+	}
+
+	function peek() public view returns (uint256) {
+		uint256 size = size();
+
+		if (size > 0) {
+			return stack[size-1];
+		}
+		else { revert("Array is empty"); }
+	}
+
+	function pop() public returns (uint256) {
+		uint256 lastElement = peek();	
+		stack.pop();
+		return lastElement;
+	}
+
+	function getStack() public view returns (uint256[] memory) {
+		return stack;
+	}
 }
