@@ -17,6 +17,7 @@ contract OnlyOwner {
     }
 
     function updateMagicNumber(uint256 _number) public {
+		require(msg.sender==owner, "Caller must be the deployer of the contract.");
         magicNumber = _number;
     }
 }
