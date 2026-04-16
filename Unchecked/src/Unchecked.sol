@@ -9,6 +9,6 @@ contract Unchecked {
     */
 
     function getNumber(uint256 x) public pure returns (uint256) {
-        return x - 100;
+        unchecked{return x - 100;}
     }
 }
