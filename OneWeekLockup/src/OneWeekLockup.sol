@@ -13,15 +13,30 @@ contract OneWeekLockup {
      * - balanceOf(address )
      */
 
+	// address points to the (uint256 value, uint256 lastDepositedAt) tuple.
+	struct BalanceData {
+    	uint256 amount;
+    	uint256 lastUpdate;
+	}
+
+	mapping(address => BalanceData) public balances;
+
     function balanceOf(address user) public view returns (uint256) {
-        // return the user's balance in the contract
+        return balances[user].amount;
     }
 
     function depositEther() external payable {
-        /// add code here
+		balances[msg.sender].amount += msg.value;
     }
 
     function withdrawEther(uint256 amount) external {
-        /// add code here
+        BalanceData storage balance = balances[msg.sender];
+		require(balance.amount >= amount, "Not enough funds to withdraw.");
+		require(balance.lastUpdate + 1 weeks < block.timestamp, "Too early to withdraw.");
+		balance.amount -= amount;
+		balance.lastUpdate = block.timestamp;
+
+		(bool ok, ) = msg.sender.call{value: amount}("");
+		require(ok, "Failed to withdraw.");
     }
 }

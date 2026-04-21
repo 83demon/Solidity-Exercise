@@ -18,6 +18,12 @@ contract ReducingPayout {
     }
 
     function withdraw() public {
-        // your code here
+		uint256 timeDifference = block.timestamp - depositedTime;
+		if (timeDifference < 1 days) {
+        	uint256 reducedValue =  (address(this).balance * (1 days - timeDifference)) / 1 days;
+			(bool ok, ) = msg.sender.call{value: reducedValue}("");		
+			require(ok, "Withdraw has failed.");
+
+		}
     }
 }

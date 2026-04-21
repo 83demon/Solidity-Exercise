@@ -3,6 +3,9 @@ pragma solidity ^0.8.13;
 
 contract TimelockEscrow {
     address public seller;
+	address private buyer;
+	uint256 endTime;
+	bool isEscrowActive;
 
     /**
      * The goal of this exercise is to create a Time lock escrow.
@@ -21,25 +24,43 @@ contract TimelockEscrow {
      * should revert if an active escrow still exist or last escrow hasn't been withdrawn
      */
     function createBuyOrder() external payable {
-        // your code here
+		require(!isEscrowActive, "No active escrow should exist.");
+		require(msg.value > 0, "Escrow should be non-zero.");
+		isEscrowActive = true;
+    	endTime = block.timestamp + 3 days; 
+		buyer = msg.sender;
     }
 
     /**
-     * allows seller to withdraw after 3 days of the escrow with @param buyer has passed
+     * allows seller to withdraw after 3 days of the escrow with @param _buyer has passed
      */
-    function sellerWithdraw(address buyer) external {
-        // your code here
+    function sellerWithdraw(address _buyer) external {
+		require(seller==msg.sender, "Only seller is allowed to call this.");
+		require(isEscrowActive, "An active escrow should exist.");
+        require(block.timestamp > endTime, "3 days should have passed.");
+		require(buyer==_buyer, "Buyers must coincide.");
+
+		isEscrowActive = false;
+		(bool ok, ) = seller.call{value: address(this).balance}("");
+		require(ok, "Seller withdraw failed.");
     }
 
     /**
      * allows buyer to withdraw at anytime before the end of the escrow (3 days)
      */
     function buyerWithdraw() external {
-        // your code here
+		require(msg.sender==buyer, "Only buyer is allowed to call this.");
+        require(isEscrowActive, "An active escrow should exist.");
+		require(block.timestamp < endTime, "3 days should not have passed.");
+
+		isEscrowActive = false;
+		(bool ok, ) = buyer.call{value: address(this).balance}("");
+		require(ok, "Buyer withdraw failed.");
     }
 
-    // returns the escrowed amount of @param buyer
-    function buyerDeposit(address buyer) external view returns (uint256) {
-        // your code here
+    // returns the escrowed amount of @param _buyer
+    function buyerDeposit(address _buyer) external view returns (uint256) {
+        require(buyer==_buyer, "Buyers must coincide.");
+        return address(this).balance;
     }
 }
